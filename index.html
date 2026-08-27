@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jadwalak – نظام إنشاء الجداول المدرسية</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+    <div id="app-viewport">
+        <div id="toast-container"></div>
+
+        <div id="wizard-shell">
+
+        <!-- ═══════════════════ الترويسة ═══════════════════ -->
+        <header class="app-header">
+            <div class="brand">
+                <span class="brand-mark">
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+                        <path d="M12 21c0-6 4-9 8-10-1 5-3 9-8 10z" fill="currentColor" />
+                        <path d="M12 21c0-7-4-11-9-12 1 6 4 11 9 12z" fill="currentColor" opacity=".65" />
+                        <path d="M12 21V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                    </svg>
+                </span>
+                <div class="brand-text">
+                    <h1>Jadwalak <span id="dirty-indicator" class="dirty-indicator" style="display:none;" title="توجد تغييرات غير محفوظة">غير محفوظ</span></h1>
+                    <p>نظام إنشاء الجداول المدرسية</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-primary" id="btn-save-project" title="حفظ (Ctrl+S)">حفظ</button>
+                <button class="btn-ghost" id="btn-export-data" title="حفظ باسم — يعرض نافذة اختيار مكان الحفظ دومًا">حفظ باسم</button>
+                <button class="btn-ghost" id="btn-import-data" title="فتح ملف مشروع آخر من القرص">فتح...</button>
+                <button class="btn-ghost" id="btn-reset-app" title="العودة إلى قائمة الملفات الحديثة">البدء من جديد</button>
+                <!-- حقل رفع احتياطي شامل (كل المتصفحات) — يعمل فقط حين لا تتوفر File System Access API؛
+                     يُنقَر برمجيًا من app.js نفسه، لا يظهر للمستخدم مباشرة إطلاقًا -->
+                <input type="file" id="web-file-input" accept=".jdwl,.json,application/json" style="display:none;" />
+            </div>
+        </header>
+
+        <!-- ═══════════════════ شريط الخطوات ═══════════════════ -->
+        <nav class="step-nav" id="step-nav">
+            <div class="step-item" data-step="1">
+                <div class="step-dot">١</div>
+                <span class="step-label">إعدادات المدرسة</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="2">
+                <div class="step-dot">٢</div>
+                <span class="step-label">الصفوف والمواد</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="3">
+                <div class="step-dot">٣</div>
+                <span class="step-label">المعلمون</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="4">
+                <div class="step-dot">٤</div>
+                <span class="step-label">الشروط والقيود</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="5">
+                <div class="step-dot">٥</div>
+                <span class="step-label">توليد الجدول</span>
+            </div>
+        </nav>
+
+        <main id="main">
+
+            <!-- ═══════════════════ الخطوة ١ ═══════════════════ -->
+            <section class="wizard-step" id="step-1">
+                <div class="card section-card">
+                    <div class="section-head">
+                        <h2>معايير المدرسة</h2>
+                        <p class="muted">حدّد أيام الدوام المدرسي، وعدد الحصص التي تسع في اليوم الواحد.</p>
+                    </div>
+
+                    <div class="field-block">
+                        <label class="form-label">أيام الدوام</label>
+                        <div class="day-grid" id="day-grid"></div>
+                    </div>
+
+                    <div class="field-block" style="max-width:260px;">
+                        <label class="form-label" for="max-periods-input">الحد الأقصى لعدد الحصص في اليوم</label>
+                        <input type="number" id="max-periods-input" class="form-input" min="1" max="10" value="7" />
+                        <p class="field-hint">من ١ إلى ١٠ حصص.</p>
+                    </div>
+                </div>
+
+                <div class="card section-card">
+                    <div class="section-head">
+                        <h2>بيانات النموذج الرسمي (للتصدير فقط)</h2>
+                        <p class="muted">تُستخدَم هذه البيانات فقط عند تصدير جدول الحصص بصيغة النموذج الوزاري الرسمي — لا تؤثر على التوليد أو أي حساب آخر في التطبيق.</p>
+                    </div>
+                    <div class="field-grid">
+                        <div class="field-block">
+                            <label class="form-label" for="school-year-input">السنة الدراسية</label>
+                            <input type="text" id="school-year-input" class="form-input" placeholder="مثال: 2025 / 2026" />
+                        </div>
+                        <div class="field-block">
+                            <label class="form-label" for="directorate-name-input">المديرية</label>
+                            <input type="text" id="directorate-name-input" class="form-input" placeholder="مديرية التربية والتعليم في محافظة / لواء / منطقة..." />
+                        </div>
+                        <div class="field-block">
+                            <label class="form-label" for="school-name-input">اسم المدرسة</label>
+                            <input type="text" id="school-name-input" class="form-input" />
+                        </div>
+                        <div class="field-block">
+                            <label class="form-label" for="city-name-input">المدينة / القرية</label>
+                            <input type="text" id="city-name-input" class="form-input" />
+                        </div>
+                        <div class="field-block">
+                            <label class="form-label" for="form-number-input">رقم النموذج</label>
+                            <input type="text" id="form-number-input" class="form-input" placeholder="نموذج (11)" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════ الخطوة ٢ ═══════════════════ -->
+            <section class="wizard-step" id="step-2">
+                <div class="card section-card">
+                    <div class="section-head">
+                        <h2>الصفوف والشعب</h2>
+                        <p class="muted">ضع علامة أمام كل مجموعة (صف × شعبة) موجودة فعلياً هذا العام.</p>
+                    </div>
+                    <div class="checkbox-toolbar">
+                        <button class="btn-tiny" id="btn-check-all-grades">تحديد الكل</button>
+                        <button class="btn-tiny" id="btn-uncheck-all-grades">إلغاء تحديد الكل</button>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="matrix-table" id="grades-matrix"></table>
+                    </div>
+                    <div class="row-actions">
+                        <button class="btn-secondary" id="btn-add-grade">+ إضافة صف</button>
+                        <button class="btn-secondary" id="btn-add-section">+ إضافة شعبة</button>
+                    </div>
+                </div>
+
+                <div class="card section-card">
+                    <div class="section-head">
+                        <h2>المواد الدراسية وقيم الحصص</h2>
+                        <p class="muted">أدخل المواد الدراسية وحدد عدد الحصص الأسبوعية لكل صف.</p>
+                    </div>
+                    <div class="inline-add" style="margin-bottom: 16px;">
+                        <input type="text" id="subject-input" class="form-input" placeholder="مثال: الرياضيات" />
+                        <button class="btn-primary" id="btn-add-subject">إضافة مادة</button>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="matrix-table" id="subjects-matrix"></table>
+                    </div>
+                </div>
+
+                <div class="card section-card">
+                    <div class="section-head">
+                        <h2>الحد الأقصى اليومي للحصص لكل صف</h2>
+                        <p class="muted">حدّد لكل صف كم حصة كحد أقصى يجوز جدولتها له في كل يوم من أيام الدوام. تُقترح القيم تلقائيًا بقسمة إجمالي حصص الصف الأسبوعية (من جدول "المواد الدراسية وقيم الحصص" أعلاه) على عدد أيام الدوام، ويمكنك تعديلها يدويًا — مثلًا لجعل الصف الرابع يأخذ حصة سابعة يوم الاثنين فقط.</p>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="matrix-table" id="grade-day-caps-matrix"></table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════ الخطوة ٣ ═══════════════════ -->
+            <section class="wizard-step" id="step-3">
+                <div class="card section-card">
+                    <div class="section-head-row">
+                        <div>
+                            <h2>المعلمون</h2>
+                            <p class="muted">أضف المعلمين وحدّد المواد والصفوف والشعب التي يدرّسونها.</p>
+                        </div>
+                        <button class="btn-primary" id="btn-add-teacher">+ إضافة معلم</button>
+                    </div>
+                    <input type="text" id="teacher-search-input" class="form-input teacher-search-input" placeholder="ابحث بالاسم أو المادة…" />
+                    <div class="teacher-grid" id="teacher-grid"></div>
+                    <div class="empty-state" id="teacher-empty">
+                        <p>لا يوجد معلمون بعد. أضف أول معلم لتبدأ بتوزيع الحصص.</p>
+                    </div>
+                    <div class="empty-state" id="teacher-search-empty">
+                        <p>لا يوجد معلمون مطابقون لهذا البحث.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════ الخطوة ٤ — الشروط والقيود ═══════════════════ -->
+            <section class="wizard-step" id="step-4">
+
+                <!-- بطاقة "توازن حصص المعلمين" (نص معلوماتي بحت عن سلوك المولّد الأصلي CP-SAT) حُذفت من نسخة
+                     الويب هذه — لا وسم عناصر فيها يحتاج app.js إطلاقًا (نص ثابت فقط)، فحذفها آمن كليًا. -->
+
+                <!-- منع معلم من التدريس في وقت محدد -->
+                <div class="card section-card">
+                    <div class="section-head">
+                        <h2>أوقات ممنوعة لمعلم محدد</h2>
+                        <p class="muted">أضف معلمًا، ثم أشّر الخانات (اليوم × الحصة) التي يجب أن يبقى فيها بلا حصص.</p>
+                    </div>
+                    <div class="constraint-add-row">
+                        <select id="block-teacher-select" class="form-input constraint-select"></select>
+                        <button class="btn-secondary" id="btn-add-teacher-block">+ إضافة</button>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="matrix-table" id="teacher-block-matrix"></table>
+                    </div>
+                    <div class="empty-state" id="teacher-block-empty">
+                        <p>لم تُضف أوقات ممنوعة بعد — اختر معلمًا أعلاه وأضفه لتحديد أوقاته الممنوعة.</p>
+                    </div>
+                </div>
+
+                <!-- تجميع حصص مادة في نفس اليوم -->
+                <div class="card section-card">
+                    <div class="section-head">
+                        <h2>تجميع حصص مادة في نفس اليوم</h2>
+                        <p class="muted">أشّر خانة (مادة × صف) ليُجمَّع توزيع حصص هذه المادة تلقائيًا لتكون متتالية في نفس اليوم لهذا الصف، بناءً على نصابها الأسبوعي دون الحاجة لتحديد رقم حصة مفضّل. تُؤشَّر "التربية المهنية" و"النشاط" تلقائيًا لكل صف عند ظهورهما لأول مرة (يمكنك إلغاء ذلك متى شئت).</p>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="matrix-table" id="subject-grouping-matrix"></table>
+                    </div>
+                    <div class="empty-state" id="subject-grouping-empty">
+                        <p>أضف مادة وصفًا واحدًا على الأقل في الخطوة الثانية أولًا.</p>
+                    </div>
+                </div>
+
+                <!-- "تثبيت حصة في مكان محدد بالجدول" مخفاة (لا محذوفة) في نسخة الويب — استُبدِلت وظيفتها هنا
+                     بالسحب/الإفلات المباشر على "الجدول التفصيلي" نفسه بعد التوليد (لا حاجة لخطوة تثبيت مسبقة
+                     منفصلة إن كان المستخدم يبني الجدول يدويًا مباشرة). تبقى موجودة في DOM فقط لتفادي انهيار
+                     app.js: عناصر مثل fp-tray-filter-teacher تُربَط بأحداثها في app.js عند تحميل السكربت مباشرة
+                     (سطر مستوى أعلى)، فحذفها فعليًا سيُسبِّب استثناءً يوقف بقية السكربت بأكمله عن العمل. -->
+                <div class="card section-card" style="display:none;">
+                    <div class="section-head">
+                        <h2>تثبيت حصة في مكان محدد بالجدول</h2>
+                        <p class="muted">اختر حصة من "الحصص غير المثبّتة" ثم انقر خانة فارغة لتثبيتها فيها — ستُلوَّن كل خانة صالحة لهذه الحصة تحديدًا. لتبديل أو نقل حصة مثبّتة بالفعل، انقر خانتها ثم الخانة الأخرى. لفكّ تثبيت حصة، انقر × على خانتها فتعود إلى القائمة الجانبية.</p>
+                    </div>
+                    <div class="tt-workspace">
+                        <div class="table-scroll">
+                            <table class="timetable-output" id="fp-table"></table>
+                            <div class="empty-state" id="fp-table-empty">
+                                <p>أضف صفوفًا وشعبًا ومعلمين أولًا لتظهر هنا مصفوفة التثبيت.</p>
+                            </div>
+                        </div>
+                        <aside class="tt-tray no-print" id="fp-tray">
+                            <h3>الحصص غير المثبّتة</h3>
+                            <p class="muted tt-tray-hint">هذه كل حصص الأسبوع التي لم تُثبَّت بعد — المولّد حرّ في وضعها أينما ناسب. اختر واحدة ثم انقر خانة فارغة لتثبيتها.</p>
+                            <div class="tt-tray-filters">
+                                <select id="fp-tray-filter-class" class="form-input tt-tray-filter-select">
+                                    <option value="all">كل الشعب</option>
+                                </select>
+                                <select id="fp-tray-filter-subject" class="form-input tt-tray-filter-select">
+                                    <option value="all">كل المواد</option>
+                                </select>
+                                <select id="fp-tray-filter-teacher" class="form-input tt-tray-filter-select">
+                                    <option value="all">كل المعلمين</option>
+                                </select>
+                            </div>
+                            <div class="tt-tray-list" id="fp-tray-list"></div>
+                        </aside>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ═══════════════════ الخطوة ٥ ═══════════════════ -->
+            <section class="wizard-step" id="step-5">
+                <div class="card section-card">
+                    <div class="section-head-row">
+                        <div>
+                            <h2>توليد الجدول</h2>
+                            <p class="muted">وَلِّد جدولًا تلقائيًا بخوارزمية بحث محلية (بلا تعارضات قدر الإمكان)، أو ابدأ ببناء الجدول يدويًا بالكامل من الصفر إن كنت تفضّل ترتيب كل حصة بنفسك.</p>
+                        </div>
+                        <div class="section-actions">
+                            <button class="btn-success" id="btn-generate">توليد الجدول</button>
+                            <button class="btn-secondary" id="btn-start-manual" title="يضع كل الحصص المطلوبة في &quot;الحصص غير المثبّتة&quot; على جدول فارغ تمامًا، لترتيبها بنفسك يدويًا بالسحب والإفلات — بلا أي محاولة توليد تلقائي">ابدأ يدويًا من الصفر</button>
+                        </div>
+                    </div>
+                    <div id="generate-status"></div>
+                </div>
+
+                <div class="card section-card" id="timetable-card" style="display:none;">
+                    <div class="section-head-row no-print">
+                        <div>
+                            <h2>النتيجة</h2>
+                            <p class="muted">الجدول الأسبوعي الكامل، مرتّب حسب اليوم والحصة.</p>
+                        </div>
+                        <div class="section-actions no-print">
+                            <button class="btn-tool no-print" id="btn-fill-gaps" title="يحاول إعادة ترتيب حصص كل شعبة تلقائيًا لإغلاق أي حصة فارغة بين حصتين مشغولتين">دمج الفراغات</button>
+                            <button class="btn-tool no-print" id="btn-rescue-unplaced" title="يحاول وضع كل حصة متبقية في &quot;الحصص غير المثبّتة&quot; مباشرة، أو بإزاحة حصة أخرى لمكان مناسب لإفساح المجال لها">وضع الحصص العالقة</button>
+                            <!-- تصدير Excel/النموذج الرسمي يحتاج C# (ClosedXML) — خارج نطاق نسخة الويب هذه
+                                 كليًا، لا مؤجَّل لمرحلة لاحقة. مخفاة لا محذوفة لنفس سبب أزرار الحفظ/الفتح أعلاه. -->
+                            <button class="btn-secondary no-print" id="btn-export-teacher-load" title="يصدّر ملف Excel بورقة مستقلة لكل معلم، تعرض نصابه الأسبوعي (الصف والمادة وعدد الحصص) — من التعيينات المُعدَّة، لا من الجدول نفسه" style="display:none;">تصدير نصاب المعلمين</button>
+                            <button class="btn-secondary no-print" id="btn-export-teacher-schedules" title="يصدّر ملف Excel بورقة مستقلة لكل معلم، تعرض جدوله الأسبوعي الفعلي (اليوم والحصة والشعبة) من الجدول المُولَّد" style="display:none;">تصدير جداول المعلمين</button>
+                            <button class="btn-secondary no-print" id="btn-export-excel" title="يصدّر كل جداول النتيجة (التفصيلي، المبسّط، وجداول المعلمين) إلى ملف Excel واحد" style="display:none;">تصدير نموذج للتدقيق</button>
+                            <button class="btn-secondary no-print" id="btn-export-official" title="يصدّر الجدول التفصيلي فقط بصيغة النموذج الوزاري الرسمي (نموذج ١١)" style="display:none;">تصدير النموذج الرسمي</button>
+                        </div>
+                    </div>
+
+                    <div class="tt-tabs no-print">
+                        <button class="tt-tab active" id="tab-detailed" data-tab="detailed" type="button">الجدول التفصيلي</button>
+                        <button class="tt-tab" id="tab-simple" data-tab="simple" type="button">الجدول المبسّط</button>
+                        <button class="tt-tab" id="tab-free" data-tab="free" type="button">أوقات فراغ المعلمين</button>
+                        <button class="tt-tab" id="tab-load" data-tab="load" type="button">التحميل حسب الحصة</button>
+                        <button class="tt-tab" id="tab-byteacher" data-tab="byteacher" type="button">الجدول حسب المعلم</button>
+                        <button class="tt-tab" id="tab-teacherclass" data-tab="teacherclass" type="button">المعلمون والشعب</button>
+                    </div>
+
+                    <div id="tt-view-detailed" class="tt-view active">
+                        <p class="muted tt-hint no-print">انقر خانتين (أو اسحب إحداهما فوق الأخرى) لتبديلهما، أو اسحب حصة إلى خانة فارغة لنقلها. لفكّ تثبيت حصة اسحبها إلى القائمة الجانبية، ثم اسحبها مرة أخرى إلى الجدول — ستُلوَّن الخانات المناسبة أثناء السحب.</p>
+                        <div class="tt-search-bar no-print">
+                            <select id="tt-search-teacher" class="form-input tt-search-select">
+                                <option value="all">كل المعلمين</option>
+                            </select>
+                            <select id="tt-search-class" class="form-input tt-search-select">
+                                <option value="all">كل الشعب</option>
+                            </select>
+                            <select id="tt-search-subject" class="form-input tt-search-select">
+                                <option value="all">كل المواد</option>
+                            </select>
+                        </div>
+                        <div class="tt-workspace">
+                            <div class="table-scroll">
+                                <table class="timetable-output" id="timetable-output"></table>
+                            </div>
+                            <aside class="tt-tray no-print" id="tt-tray">
+                                <h3>الحصص غير المثبّتة</h3>
+                                <p class="muted tt-tray-hint">اسحب حصة من الجدول إلى هنا لفكّ تثبيتها.</p>
+                                <div class="tt-tray-filters">
+                                    <select id="tt-tray-filter-teacher" class="form-input tt-tray-filter-select">
+                                        <option value="all">كل المعلمين</option>
+                                    </select>
+                                    <select id="tt-tray-filter-class" class="form-input tt-tray-filter-select">
+                                        <option value="all">كل الشعب</option>
+                                    </select>
+                                </div>
+                                <div class="tt-tray-list" id="tt-tray-list"></div>
+                            </aside>
+                        </div>
+                    </div>
+
+                    <div id="tt-view-simple" class="tt-view">
+                        <div class="table-scroll">
+                            <table class="timetable-output" id="timetable-simple-output"></table>
+                        </div>
+                    </div>
+
+                    <div id="tt-view-free" class="tt-view">
+                        <p class="muted tt-hint no-print">تُظهر هذه المصفوفة أي معلم متاح (بلا حصة) في كل يوم وحصة — مفيدة لإيجاد بديل سريعًا.</p>
+                        <div class="table-scroll">
+                            <table class="timetable-output" id="timetable-free-output"></table>
+                        </div>
+                    </div>
+
+                    <div id="tt-view-load" class="tt-view">
+                        <p class="muted tt-hint no-print">عدد حصص كل معلم في كل رقم حصة، مجموعًا عبر أيام الأسبوع — يوضّح مدى تركّز حصص معلم معيّن في وقت بعينه.</p>
+                        <div class="table-scroll">
+                            <table class="timetable-output" id="timetable-load-output"></table>
+                        </div>
+                    </div>
+
+                    <div id="tt-view-byteacher" class="tt-view">
+                        <p class="muted tt-hint no-print">جدول كل معلم الأسبوعي: أي شعبة (صف - شعبة) يُدرِّسها في كل يوم وحصة.</p>
+                        <div class="table-scroll">
+                            <table class="timetable-output" id="timetable-byteacher-output"></table>
+                        </div>
+                    </div>
+
+                    <div id="tt-view-teacherclass" class="tt-view">
+                        <p class="muted tt-hint no-print">لكل معلم، المادة وعدد حصصها الأسبوعية في كل شعبة يُدرِّسها.</p>
+                        <div class="table-scroll">
+                            <table class="timetable-output" id="timetable-teacherclass-output"></table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="wizard-footer no-print">
+            <button class="btn-secondary" id="btn-back">رجوع</button>
+            <button class="btn-primary" id="btn-next">التالي</button>
+        </footer>
+
+        <!-- ═══════════════════ نافذة المعلم ═══════════════════ -->
+        <div class="modal-overlay" id="teacher-modal">
+            <div class="card modal fade-in">
+                <div class="modal-head">
+                    <h3 id="modal-title">إضافة معلم</h3>
+                    <button class="modal-close" id="btn-modal-close">✕</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="field-block">
+                        <label class="form-label" for="teacher-name-input">اسم المعلم</label>
+                        <input type="text" id="teacher-name-input" class="form-input" placeholder="مثال: سارة كريم" />
+                    </div>
+
+                    <div class="field-block" id="no-subjects-hint" style="display:none;">
+                        <p class="muted">أضف موادًا في الخطوة الثانية قبل توزيع حصص المعلم.</p>
+                    </div>
+
+                    <div class="subject-tab-bar" id="subject-tab-bar"></div>
+                    <div class="checkbox-toolbar">
+                        <button class="btn-tiny" id="btn-check-all-assign">تحديد الكل</button>
+                        <button class="btn-tiny" id="btn-uncheck-all-assign">إلغاء تحديد الكل</button>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="matrix-table assign-matrix" id="assign-matrix"></table>
+                    </div>
+                </div>
+
+                <div class="modal-foot">
+                    <button class="btn-secondary" id="btn-cancel-teacher">إلغاء</button>
+                    <button class="btn-primary" id="btn-save-teacher">حفظ المعلم</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- نافذة تأكيد عامة: فكّ تثبيت حصص أُبطلت بتغيير آخر، أو تعارض عند تغيير معلم مادة (النص ديناميكي بالكامل) -->
+        <div class="modal-overlay" id="fp-conflict-modal">
+            <div class="card modal fade-in">
+                <div class="modal-head">
+                    <h3 id="fp-conflict-title">هذا التغيير سيُبطل حصصًا مثبّتة</h3>
+                    <button class="modal-close" id="btn-fp-conflict-close">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p class="muted" id="fp-conflict-summary"></p>
+                    <div id="fp-conflict-list"></div>
+                </div>
+                <div class="modal-foot">
+                    <button class="btn-secondary" id="btn-fp-conflict-cancel">إلغاء هذا التغيير</button>
+                    <button class="btn-primary" id="btn-fp-conflict-confirm">متابعة وفكّ تثبيتها</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- قائمة سياقية (زر الفأرة الأيمن) لخانات "الجدول التفصيلي" — إجراءات على خانة واحدة، بخلاف
+             أزرار "دمج الفراغات/تصدير..." التي تبقى لإجراءات على الجدول كاملًا -->
+        <div class="context-menu" id="cell-context-menu">
+            <button type="button" class="context-menu-item" id="ctx-change-teacher">تغيير معلم هذه المادة</button>
+        </div>
+
+        <!-- اختيار المعلم الجديد لمادة/شعبة معيّنة -->
+        <div class="modal-overlay" id="reassign-teacher-modal">
+            <div class="card modal fade-in">
+                <div class="modal-head">
+                    <h3>تغيير معلم المادة</h3>
+                    <button class="modal-close" id="btn-reassign-teacher-close">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p class="muted" id="reassign-teacher-desc"></p>
+                    <div class="field-block">
+                        <label class="form-label" for="reassign-teacher-select">المعلم الجديد</label>
+                        <select id="reassign-teacher-select" class="form-input"></select>
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button class="btn-secondary" id="btn-reassign-teacher-cancel">إلغاء</button>
+                    <button class="btn-primary" id="btn-reassign-teacher-confirm">تأكيد التغيير</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════ نافذة "تغييرات غير محفوظة" ═══════════════════ -->
+        <div class="modal-overlay" id="unsaved-changes-modal">
+            <div class="card modal fade-in">
+                <div class="modal-head">
+                    <h3>لديك تغييرات غير محفوظة</h3>
+                    <button class="modal-close" id="btn-unsaved-close">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p class="muted">هل تريد حفظ التغييرات قبل المتابعة؟</p>
+                </div>
+                <div class="modal-foot">
+                    <button class="btn-secondary" id="btn-unsaved-cancel">إلغاء</button>
+                    <button class="btn-danger" id="btn-unsaved-discard">تجاهل التغييرات</button>
+                    <button class="btn-primary" id="btn-unsaved-save">حفظ</button>
+                </div>
+            </div>
+        </div>
+
+        </div><!-- /#wizard-shell -->
+
+        <!-- ═══════════════════ شاشة قائمة المشاريع (الشاشة الافتتاحية) ═══════════════════ -->
+        <div id="project-list-view" style="display:none;">
+            <header class="app-header">
+                <div class="brand">
+                    <span class="brand-mark">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+                            <path d="M12 21c0-6 4-9 8-10-1 5-3 9-8 10z" fill="currentColor" />
+                            <path d="M12 21c0-7-4-11-9-12 1 6 4 11 9 12z" fill="currentColor" opacity=".65" />
+                            <path d="M12 21V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                        </svg>
+                    </span>
+                    <div class="brand-text">
+                        <h1>Jadwalak</h1>
+                        <p>نظام إنشاء الجداول المدرسية</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-ghost" id="btn-import-project" title="فتح ملف مشروع من القرص">فتح...</button>
+                </div>
+            </header>
+
+            <main class="project-list-main">
+                <div class="project-list-head">
+                    <div>
+                        <h2>الملفات الحديثة</h2>
+                        <p class="muted">افتح أحد ملفاتك الأخيرة للمتابعة، أنشئ مشروعًا جديدًا، أو افتح ملفًا آخر من القرص.</p>
+                    </div>
+                    <button class="btn-primary" id="btn-create-project">+ مشروع جديد</button>
+                </div>
+                <input type="text" id="project-search-input" class="form-input project-search-input" placeholder="ابحث بالاسم..." />
+                <div class="project-list-body" id="project-list"></div>
+                <div class="empty-state" id="project-list-empty">
+                    <p>لا توجد ملفات حديثة بعد — أنشئ أول مشروع لتبدأ، أو افتح ملفًا محفوظًا سابقًا.</p>
+                </div>
+            </main>
+        </div>
+
+    </div>
+
+    <div class="generation-overlay" id="generation-overlay">
+        <div class="generation-overlay-box fade-in">
+            <div class="generation-spinner"></div>
+            <div class="generation-overlay-text" id="generation-overlay-text">جارٍ توليد الجدول…</div>
+            <div class="generation-overlay-subtext" id="generation-overlay-subtext">قد تستغرق هذه العملية بضع ثوانٍ</div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

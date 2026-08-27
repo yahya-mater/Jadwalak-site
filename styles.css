@@ -1,0 +1,1788 @@
+/* ═══════════════════════════════════════════════════════════════
+   Sprout — School Timetable Generator
+   Stylesheet | vanilla CSS, green palette
+═══════════════════════════════════════════════════════════════ */
+
+:root {
+    --green-900: #0f3d2e;
+    --green-800: #14532d;
+    --green-700: #1f7a4d;
+    --green-600: #22935c;
+    --green-500: #2dab6d;
+    --mint-100: #e6f6ec;
+    --mint-50: #f2faf5;
+    --cream: #fbfaf6;
+    --ink: #16241d;
+    --slate: #5b6b63;
+    --slate-light: #8a978f;
+    --line: #e0e8e2;
+    --red-500: #dc4b3f;
+    --red-100: #fdecea;
+    --amber-500: #c98a1e;
+    --amber-100: #fbf1dd;
+    --radius: 14px;
+    --radius-sm: 9px;
+    --shadow-card: 0 1px 3px rgba(15,61,46,.06), 0 8px 24px rgba(15,61,46,.06);
+    --titlebar-height: 0px;
+}
+
+
+#app-viewport {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto; /* Scrollbar lives safely down here now! */
+    position: relative;
+    box-sizing: border-box;
+    /* FORCE SCROLLBAR TO THE RIGHT SIDE */
+    direction: ltr !important;
+}
+
+    #app-viewport > * {
+        direction: rtl; /* Put your desired text layout here (rtl or initial) */
+    }
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    overscroll-behavior: none !important;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Tajawal', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-align: right;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+
+    body.has-custom-titlebar {
+        --titlebar-height: 32px;
+    }
+
+h1, h2, h3 {
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: 0;
+}
+
+.muted {
+    color: var(--slate);
+    font-size: 13.5px;
+    margin: 4px 0 0;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c7d8cd;
+    border-radius: 6px;
+}
+
+/* ── Header ── */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg,#ffffff, var(--cream));
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg,var(--green-600),var(--green-800));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(31,122,77,.35);
+}
+
+.brand-text h1 {
+    font-size: 21px;
+    color: var(--green-900);
+    line-height: 1.1;
+}
+
+.brand-text p {
+    margin: 1px 0 0;
+    font-size: 12px;
+    color: var(--slate);
+    font-family: 'Tajawal',sans-serif;
+}
+
+.dirty-indicator {
+    font-size: 11px;
+    font-weight: 700;
+    color: #b02a1f;
+    background: #fbe4e1;
+    border-radius: 20px;
+    padding: 2px 9px;
+    margin-inline-start: 6px;
+    vertical-align: middle;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-ghost {
+    background: transparent;
+    border: 1.5px solid var(--line);
+    color: var(--slate);
+    border-radius: var(--radius-sm);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+}
+
+    .btn-ghost:hover {
+        border-color: var(--red-500);
+        color: var(--red-500);
+    }
+
+/* ── Step nav ── */
+.step-nav {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    max-width: 840px;
+    margin: 28px auto 8px;
+    padding: 0 24px;
+}
+
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.step-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    border: 2px solid var(--line);
+    background: #fff;
+    color: var(--slate-light);
+    transition: all .25s;
+}
+
+.step-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--slate-light);
+    white-space: nowrap;
+    transition: color .25s;
+}
+
+.step-item.active .step-dot {
+    border-color: var(--green-600);
+    background: var(--green-600);
+    color: #fff;
+    box-shadow: 0 0 0 4px var(--mint-100);
+}
+
+.step-item.active .step-label {
+    color: var(--green-800);
+}
+
+.step-item.done .step-dot {
+    border-color: var(--green-700);
+    background: var(--green-700);
+    color: #fff;
+}
+
+    .step-item.done .step-dot::after {
+        content: '✓';
+    }
+
+.step-item.done .step-dot {
+    font-size: 0;
+}
+
+    .step-item.done .step-dot::after {
+        font-size: 15px;
+    }
+
+.step-item.done .step-label {
+    color: var(--green-700);
+}
+
+.step-line {
+    flex: 1;
+    height: 2px;
+    background: var(--line);
+    margin: 0 6px;
+    margin-bottom: 24px;
+    transition: background .3s;
+    min-width: 24px;
+}
+
+    .step-line.done {
+        background: var(--green-500);
+    }
+
+/* ── Main / cards ── */
+#main {
+    /* max-width:1040px; */
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 8px 24px 40px;
+}
+
+.wizard-step {
+    display: none;
+    animation: fadeIn .25s ease;
+}
+
+    .wizard-step.active {
+        display: block;
+    }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--line);
+}
+
+.section-card {
+    padding: 26px 28px;
+    margin-bottom: 20px;
+}
+
+.section-head {
+    margin-bottom: 20px;
+}
+
+.section-head-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.section-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.field-block {
+    margin-bottom: 20px;
+}
+
+    .field-block:last-child {
+        margin-bottom: 0;
+    }
+
+.field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+    gap: 16px 20px;
+}
+
+    .field-grid .field-block {
+        margin-bottom: 0;
+    }
+
+.form-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green-900);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-input {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 9px 13px;
+    width: 100%;
+    font-size: 14px;
+    font-family: 'Tajawal',sans-serif;
+    background: #fff;
+    color: var(--ink);
+    transition: border-color .15s, box-shadow .15s;
+}
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--green-600);
+        box-shadow: 0 0 0 3px var(--mint-100);
+    }
+
+.field-hint {
+    font-size: 11.5px;
+    color: var(--slate-light);
+    margin: 6px 0 0;
+}
+
+/* ── Buttons ── */
+.btn-primary {
+    background: linear-gradient(135deg,var(--green-600),var(--green-700));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .18s;
+    box-shadow: 0 3px 10px rgba(34,147,92,.3);
+    white-space: nowrap;
+}
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 16px rgba(34,147,92,.4);
+    }
+
+    .btn-primary:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+.btn-secondary {
+    background: var(--mint-50);
+    color: var(--green-800);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 9px 18px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .18s;
+    white-space: nowrap;
+}
+
+    .btn-secondary:hover {
+        background: var(--mint-100);
+        border-color: var(--green-500);
+    }
+
+/* أزرق — إشارة بصرية مميَّزة لأزرار "الأدوات" (تعمل على الجدول نفسه: دمج الفراغات، وضع الحصص العالقة)،
+   تمييزًا لها عن أزرار التصدير الخضراء المعتادة. نفس درجة الأزرق المستخدَمة أصلًا لتظليل "same-subject" في
+   محرِّر الجدول التفصيلي — إشارة زرقاء متّسقة عبر التطبيق، لا لون جديد مُستحدَث لهذا الغرض فقط */
+.btn-tool {
+    background: #dbeaff;
+    color: #1d4e89;
+    border: 1.5px solid #3b6fd6;
+    border-radius: var(--radius-sm);
+    padding: 9px 18px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .18s;
+    white-space: nowrap;
+}
+
+    .btn-tool:hover {
+        background: #c7ddfc;
+        border-color: #2a5bc4;
+    }
+
+    .btn-tool:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+.btn-success {
+    background: linear-gradient(135deg,var(--green-700),var(--green-900));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 11px 24px;
+    font-weight: 700;
+    font-size: 14.5px;
+    cursor: pointer;
+    transition: all .18s;
+    box-shadow: 0 4px 14px rgba(15,61,46,.3);
+    white-space: nowrap;
+}
+
+    .btn-success:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn-success:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+.btn-secondary:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.btn-danger {
+    background: var(--red-100);
+    color: var(--red-500);
+    border: none;
+    border-radius: 7px;
+    padding: 6px 11px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+    .btn-danger:hover {
+        background: #fbdad6;
+    }
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--slate-light);
+    font-size: 14px;
+    line-height: 1;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all .15s;
+}
+
+    .btn-icon:hover {
+        color: var(--red-500);
+        background: var(--red-100);
+    }
+
+/* ── Day grid (Step 1) ── */
+.day-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(120px,1fr));
+    gap: 10px;
+}
+
+.day-check {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all .15s;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+    .day-check:hover {
+        border-color: var(--green-400,var(--green-500));
+    }
+
+    .day-check.checked {
+        border-color: var(--green-600);
+        background: var(--mint-50);
+        color: var(--green-800);
+    }
+
+    .day-check input {
+        accent-color: var(--green-600);
+        width: 16px;
+        height: 16px;
+    }
+
+/* ── Matrix table (Step 2 + modal) ── */
+.table-scroll {
+    overflow-x: auto;
+    border-radius: var(--radius-sm);
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 16px;
+}
+
+.matrix-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    font-size: 13.5px;
+    table-layout: auto; /* Ensures natural expanding based on min-width */
+}
+
+    .matrix-table th,
+    .matrix-table td {
+        border-bottom: 1px solid var(--line);
+        border-inline-end: 1px solid var(--line);
+        padding: 10px 14px;
+        text-align: center;
+        white-space: nowrap;
+        /* Guarantee minimum width so section names don't get squished */
+        min-width: 110px;
+    }
+
+        .matrix-table th:last-child,
+        .matrix-table td:last-child {
+            border-inline-end: none;
+        }
+
+    .matrix-table thead th {
+        background: var(--mint-50);
+        color: var(--green-900);
+        font-weight: 700;
+        position: sticky;
+        top: 0;
+    }
+
+    .matrix-table tbody th {
+        text-align: start;
+        font-weight: 700;
+        color: var(--ink);
+        background: #fff;
+    }
+
+        /* Specific styling for the first column ("الصف \ الشعبة") */
+        .matrix-table .col-first-header,
+        .matrix-table tbody th:first-child {
+            min-width: 180px;
+            width: 180px;
+            text-align: right;
+            position: sticky;
+            right: 0; /* Keep first column pinned on horizontal scroll if needed */
+            /* z-index: 2; */
+            background: #fff;
+        }
+
+    .matrix-table thead th.col-first-header {
+        background: var(--mint-50);
+        z-index: 1;
+    }
+
+    .matrix-table tbody tr:hover td {
+        background: var(--mint-50);
+    }
+
+    .matrix-table input[type=checkbox] {
+        width: 17px;
+        height: 17px;
+        accent-color: var(--green-600);
+        cursor: pointer;
+    }
+
+.col-head-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 90px; /* Ensures input + delete button stay visible */
+}
+
+.row-head-cell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.name-editable {
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    color: var(--ink);
+    width: 100%;
+    padding: 2px 4px;
+    border-radius: 6px;
+    text-align: inherit;
+    cursor: text;
+}
+
+    .name-editable:focus {
+        outline: none;
+        background: var(--mint-50);
+        box-shadow: 0 0 0 2px var(--mint-100);
+    }
+
+/* Ensuring the "الصف \ الشعبة" column matches standard width rules */
+.col-first-header {
+    min-width: 180px;
+    width: 180px;
+    text-align: right;
+}
+
+.subject-period-input {
+    width: 60px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 4px 6px;
+    text-align: center;
+    font-size: 13px;
+    font-family: 'Tajawal', sans-serif;
+}
+
+    .subject-period-input:focus {
+        outline: none;
+        border-color: var(--green-600);
+        box-shadow: 0 0 0 2px var(--mint-100);
+    }
+
+/* ── Grade daily period-cap matrix (Step 2) ── */
+.day-cap-input {
+    width: 56px;
+}
+
+.cap-total-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+    .cap-total-badge.ok {
+        background: var(--mint-100);
+        color: var(--green-800);
+    }
+
+    .cap-total-badge.mismatch {
+        background: var(--amber-100);
+        color: var(--amber-500);
+    }
+
+.btn-icon-reset {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--slate-light);
+    font-size: 13px;
+    line-height: 1;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all .15s;
+    flex-shrink: 0;
+}
+
+    .btn-icon-reset:hover {
+        color: var(--green-700);
+        background: var(--mint-100);
+    }
+
+.row-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* ── Check-all / uncheck-all toolbar ── */
+.checkbox-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.btn-tiny {
+    background: var(--mint-50);
+    color: var(--green-800);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 6px 14px;
+    font-weight: 600;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+}
+
+    .btn-tiny:hover {
+        background: var(--mint-100);
+        border-color: var(--green-500);
+    }
+
+/* ── Constraints step (Step 4) ── */
+.constraint-add-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.constraint-select {
+    width: auto;
+    min-width: 150px;
+    flex: 1;
+}
+
+.constraint-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.constraint-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    background: var(--mint-50);
+}
+
+    .constraint-item .constraint-text {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--green-900);
+    }
+
+        .constraint-item .constraint-text .constraint-sub {
+            color: var(--slate);
+            font-weight: 500;
+            font-size: 12.5px;
+            margin-inline-start: 6px;
+        }
+
+/* ── Chips (subjects) ── */
+.inline-add {
+    display: flex;
+    gap: 10px;
+    max-width: 420px;
+}
+
+/* ── Teachers grid (Step 3) ── */
+.teacher-search-input {
+    margin-bottom: 16px;
+    max-width: 360px;
+}
+
+.teacher-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
+    gap: 16px;
+}
+
+/* ── شاشة قائمة المشاريع ── */
+.project-list-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+}
+
+.project-list-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+    .project-list-head h2 {
+        margin: 0 0 4px;
+        font-size: 20px;
+    }
+
+.project-search-input {
+    margin-bottom: 20px;
+    max-width: 360px;
+}
+
+.project-list-body {
+    display: flex;
+    flex-direction: column;
+}
+/* قسم واحد لكل فئة زمنية نسبية (اليوم/أمس/هذا الأسبوع/...) — يظهر دومًا مهما قلّ عدد الملفات، مطابقةً
+   لسلوك Word/Excel نفسه، لا فقط عند تجاوز عدد معيّن من الملفات */
+.project-list-section {
+    margin-bottom: 22px;
+}
+
+    .project-list-section:last-child {
+        margin-bottom: 0;
+    }
+
+.project-list-section-header {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--slate-light);
+    padding: 0 2px 6px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+}
+
+.project-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-card);
+}
+
+    .project-row:last-child {
+        margin-bottom: 0;
+    }
+
+.project-row-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green-900);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.project-row-meta {
+    flex: 0 0 auto;
+    font-size: 11.5px;
+    color: var(--slate-light);
+    white-space: nowrap;
+}
+
+.project-row-actions {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 8px;
+}
+
+    .project-row-actions button {
+        font-size: 12px;
+        padding: 7px 12px;
+    }
+/* ملف غير موجود عند آخر فحص (نُقل أو حُذف من خارج التطبيق) — رمادي/باهت بدل التنبيه الأحمر الحاد، فهذه ليست
+   حالة خطأ من المستخدم بل مجرّد معلومة؛ لاحظ عدم وجود زر "فتح" إطلاقًا لهذا الصف (يُحذَف من القالب نفسه،
+   لا يكفي تعطيله فقط) بما أن فتحه مستحيل فعليًا */
+.project-row.project-row-missing {
+    opacity: .6;
+    background: var(--mint-50);
+}
+
+    .project-row.project-row-missing .project-row-name {
+        color: var(--slate-light);
+    }
+
+    .project-row.project-row-missing .project-row-meta {
+        color: #b02a1f;
+    }
+
+.import-choice-option {
+    margin-bottom: 16px;
+}
+
+    .import-choice-option:last-child {
+        margin-bottom: 0;
+    }
+
+.import-choice-desc {
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.teacher-card {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    transition: all .15s;
+    background: #fff;
+}
+
+    .teacher-card:hover {
+        border-color: var(--green-500);
+        box-shadow: 0 4px 14px rgba(34,147,92,.1);
+    }
+
+    .teacher-card h4 {
+        margin: 0 0 4px;
+        font-family: 'Tajawal',sans-serif;
+        font-size: 16px;
+        color: var(--green-900);
+        font-weight: 700;
+    }
+
+    .teacher-card .load-summary {
+        font-size: 12.5px;
+        color: var(--slate);
+        margin: 0 0 12px;
+        line-height: 1.6;
+        min-height: 20px;
+    }
+
+.teacher-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+    .teacher-card-actions .btn-secondary, .teacher-card-actions .btn-danger {
+        flex: 1;
+        text-align: center;
+    }
+
+.empty-state {
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--slate-light);
+    font-size: 14px;
+    display: none;
+}
+
+    .empty-state.show {
+        display: block;
+    }
+
+/* ── Badges ── */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.badge-green {
+    background: var(--mint-100);
+    color: var(--green-800);
+}
+
+.badge-amber {
+    background: var(--amber-100);
+    color: var(--amber-500);
+}
+
+/* ── Footer nav ── */
+.wizard-footer {
+    z-index: 1;
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: rgba(251,250,246,.9);
+    backdrop-filter: blur(6px);
+    border-top: 1px solid var(--line);
+    /* max-width:1040px; */
+    margin: 0 auto;
+}
+
+/* ── Modal ── */
+.context-menu {
+    display: none;
+    position: fixed;
+    z-index: 400;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: var(--shadow-card);
+    padding: 4px;
+    min-width: 210px;
+}
+
+    .context-menu.show {
+        display: block;
+    }
+
+.context-menu-item {
+    display: block;
+    width: 100%;
+    text-align: right;
+    background: none;
+    border: none;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: var(--slate);
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+    .context-menu-item:hover {
+        background: var(--mint-50);
+        color: var(--green-800);
+    }
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,36,26,.45);
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+}
+
+    .modal-overlay.show {
+        display: flex;
+    }
+
+.modal {
+    width: min(760px,96vw);
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--slate-light);
+    cursor: pointer;
+}
+
+    .modal-close:hover {
+        color: var(--red-500);
+    }
+
+.modal-body {
+    padding: 22px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--line);
+    flex-shrink: 0;
+}
+
+.subject-tab-bar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.subject-tab {
+    border: 1.5px solid var(--line);
+    background: #fff;
+    color: var(--slate);
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+}
+
+    .subject-tab:hover {
+        border-color: var(--green-500);
+    }
+
+    .subject-tab.active {
+        background: var(--green-600);
+        border-color: var(--green-600);
+        color: #fff;
+    }
+    /* نقطة صغيرة تُلوَّن للدلالة على أن هذا المعلم لديه حصص مخصَّصة فعلًا لهذه المادة — تبقى مرئية سواء كان
+   التبويب نشطًا (نقطة بيضاء على خلفية خضراء) أو غير نشط (نقطة خضراء على خلفية بيضاء) */
+    .subject-tab.has-assignments::after {
+        content: '';
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green-600);
+        margin-inline-start: 7px;
+        vertical-align: middle;
+    }
+
+    .subject-tab.active.has-assignments::after {
+        background: #fff;
+    }
+
+.assign-matrix td.inactive-cell {
+    background: #f5f6f4;
+    color: var(--slate-light);
+}
+
+.assign-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.block-cell {
+    text-align: center;
+}
+
+    .block-cell input[type=checkbox] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+/* ── Toasts ── */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    width: calc(100% - 32px);
+    max-width: 420px;
+}
+
+.toast {
+    padding: 13px 20px;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 8px 26px rgba(0,0,0,.18);
+    opacity: 0;
+    transform: translateY(-16px);
+    transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    text-align: center;
+}
+
+    .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .toast.success {
+        background: linear-gradient(135deg,var(--green-600),var(--green-800));
+    }
+
+    .toast.error {
+        background: linear-gradient(135deg,#dc4b3f,#b8362c);
+    }
+
+    .toast.info {
+        background: linear-gradient(135deg,#2563eb,#1d4ed8);
+    }
+
+/* ── Generation loading overlay ── */
+.generation-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,36,26,.45);
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    padding: 20px;
+}
+
+    .generation-overlay.show {
+        display: flex;
+    }
+
+.generation-overlay-box {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 32px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    min-width: 260px;
+    text-align: center;
+}
+
+.generation-spinner {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 4px solid var(--mint-100);
+    border-top-color: var(--green-600);
+    animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.generation-overlay-text {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--green-800);
+}
+
+.generation-overlay-subtext {
+    font-size: 12.5px;
+    color: var(--slate-light);
+    margin-top: -8px;
+}
+
+/* ── Generate status ── */
+#generate-status {
+    margin-top: 4px;
+}
+
+.status-banner {
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+.status-success {
+    background: var(--mint-50);
+    color: var(--green-800);
+    border: 1px solid var(--mint-100);
+}
+
+.status-warning {
+    background: var(--amber-100);
+    color: var(--amber-500);
+    border: 1px solid #f3e2bb;
+}
+
+.status-error {
+    background: var(--red-100);
+    color: var(--red-500);
+    border: 1px solid #f6cfc9;
+}
+
+/* ── Timetable output ── */
+.timetable-output {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12.5px;
+}
+
+    .timetable-output th, .timetable-output td {
+        border: 1px solid var(--line);
+        padding: 8px 10px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .timetable-output thead tr:first-child th {
+        background: var(--green-900);
+        color: #fff;
+        font-size: 12.5px;
+    }
+
+    .timetable-output thead tr:nth-child(2) th {
+        background: var(--green-600);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .timetable-output tbody th {
+        background: var(--mint-50);
+        color: var(--green-900);
+        font-weight: 700;
+    }
+    /* فاصل قوي بين كل يوم والذي يليه، لتفادي الخلط بين آخر حصة في يوم وأول حصة في اليوم التالي عند القراءة السريعة */
+    .timetable-output tbody tr.tt-day-start > th,
+    .timetable-output tbody tr.tt-day-start > td {
+        border-top: 2px solid #1a1a1a;
+    }
+
+    .timetable-output td.free-cell {
+        color: var(--slate-light);
+        font-style: italic;
+    }
+
+    .timetable-output tbody tr:hover td {
+        background: var(--mint-50);
+    }
+
+    /* تثبيت عمودي اليوم والحصة أثناء التمرير الأفقي للجدول (عرض كافٍ لأطول اسم يوم عربي لضمان محاذاة صحيحة) */
+    .timetable-output td.tt-day-col,
+    .timetable-output th.tt-day-col,
+    .timetable-output td.tt-period-col,
+    .timetable-output th.tt-period-col {
+        /* Clear standard border to prevent layout shifts */
+        border: none !important;
+        position: sticky;
+    }
+
+    .timetable-output td.tt-day-col,
+    .timetable-output th.tt-day-col {
+        /* Box shadow draws: bottom line, left line, right line, and top line safely inside the element */
+        box-shadow: inset 0 -1px 0 var(--line), inset 1px 0 0 var(--line), inset -1px 0 0 var(--line), inset 0 1px 0 var(--line);
+    }
+
+    .timetable-output td.tt-period-col,
+    .timetable-output th.tt-period-col {
+        /* Box shadow draws: bottom line, left line, right line, and top line safely inside the element */
+        box-shadow: inset 0 -1px 0 var(--line), inset 1px 0 0 var(--line), inset 0 1px 0 var(--line);
+    }
+
+    .timetable-output th.tt-day-col,
+    .timetable-output th.tt-period-col {
+        position: sticky;
+        z-index: 1;
+    }
+
+    .timetable-output th.tt-day-col {
+        right: 0;
+        min-width: 92px;
+    }
+
+    .timetable-output th.tt-period-col {
+        right: 92px;
+        min-width: 60px;
+    }
+
+    .timetable-output thead th.tt-day-col,
+    .timetable-output thead th.tt-period-col {
+        z-index: 1;
+    }
+
+    .timetable-output tbody th.tt-day-col,
+    .timetable-output tbody th.tt-period-col {
+        background: var(--mint-50);
+    }
+
+    /* تحرير الجدول: تحديد وسحب/إفلات الحصص — كل حصة الآن عمودان حقيقيان (معلم/مادة) بنفس بيانات data-*،
+   لذا يُعاد ضبط الحالة البصرية (تحديد/سحب/تحويم) على الاثنين معًا عبر الصنف المشترك أو linked-hover */
+    .timetable-output td.tt-cell {
+        cursor: pointer;
+        user-select: none;
+        transition: background .15s ease, box-shadow .15s ease;
+        position: relative;
+    }
+
+        .timetable-output td.tt-cell:hover,
+        .timetable-output td.tt-cell.linked-hover {
+            background: #eef7f0;
+        }
+
+        .timetable-output td.tt-cell.selected {
+            background: var(--green-600) !important;
+            color: #fff;
+            box-shadow: inset 0 0 0 2px var(--green-900);
+        }
+
+        .timetable-output td.tt-cell.drag-over {
+            background: #fff3cd !important;
+            box-shadow: inset 0 0 0 2px #dba617;
+        }
+
+    .timetable-output td.free-cell.tt-cell:hover {
+        background: #e3f2ea;
+    }
+
+    .timetable-output td.tt-cell.valid-target {
+        background: #d6f5df !important;
+        box-shadow: inset 0 0 0 2px var(--green-600);
+    }
+
+        .timetable-output td.tt-cell.valid-target.drag-over {
+            background: #b9edc8 !important;
+        }
+    /* أزرق: نفس المادة لنفس الشعبة موجودة في مكان آخر من الأسبوع — تحذير بصري بحت، القرار متروك للمستخدم */
+    .timetable-output td.tt-cell.same-subject {
+        background: #dbeaff !important;
+        box-shadow: inset 0 0 0 2px #3b6fd6;
+    }
+    /* أصفر: نتيجة بحث سلبية — أقل إلحاحًا من الأزرق/الأخضر (لذلك تُطبَّق فقط حين لا ينطبق أي منهما، لا معًا) */
+    .timetable-output td.tt-cell.search-match {
+        background: #fff6cf !important;
+        box-shadow: inset 0 0 0 2px #d6b30f;
+    }
+    /* تلميح تجميع: مادة مُجمَّعة معزولة عن زميلتها لهذا اليوم — نقطة زرقاء صغيرة في الزاوية فقط (لا تلوين
+   للخانة كاملة)، عمدًا لتتراكب فوق أي حالة أخرى (تحديد/بحث/هدف صالح) بلا أي تعارض بصري معها؛ نفس أزرق
+   same-subject تحديدًا (إعادة استخدام نفس اللغة البصرية، لا لون جديد) لكن بشكل نقطة لا خلفية كاملة، بما
+   أنها معلومة سلبية بحتة قد تكون متوقَّعة وسليمة تمامًا (كإحدى حصص مادة بعدد أسبوعي فردي) لا خطأ فعليًا */
+    .timetable-output td.tt-cell.grouping-hint::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        inset-inline-start: 3px;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #3b6fd6;
+        box-shadow: 0 0 0 1.5px #fff;
+    }
+
+    .timetable-output td.tt-subject-cell {
+        font-weight: 700;
+        padding-inline-end: 20px;
+    }
+
+    .timetable-output td.tt-teacher-cell {
+        font-size: 11px;
+        color: var(--slate-light);
+    }
+
+    .timetable-output td.tt-cell.selected.tt-teacher-cell {
+        color: #e7f6ec;
+    }
+
+.tt-search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.tt-search-select {
+    max-width: 220px;
+}
+
+/* ── جداول التقارير الإضافية (فراغ المعلمين / التحميل حسب الحصة / الجدول حسب المعلم / المعلمون والشعب) ── */
+.timetable-output td.tt-free-yes {
+    background: var(--mint-50);
+    color: var(--green-800);
+    font-weight: 700;
+}
+
+.timetable-output td.tt-free-no {
+    color: var(--slate-light);
+}
+
+.timetable-output td.tt-load-has {
+    font-weight: 600;
+}
+
+.timetable-output td.tt-total-cell {
+    background: var(--mint-50);
+    color: var(--green-900);
+    font-weight: 700;
+}
+
+    .timetable-output td.tt-total-cell.tt-grand-total {
+        background: var(--green-600);
+        color: #fff;
+    }
+
+.unpin-btn {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    line-height: 14px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0,0,0,.15);
+    color: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+    padding: 0;
+    z-index: 1;
+}
+
+.timetable-output td.tt-cell:hover .unpin-btn,
+.timetable-output td.tt-cell.linked-hover .unpin-btn {
+    display: block;
+}
+
+.unpin-btn:hover {
+    background: #dc4b3f;
+    color: #fff;
+}
+
+/* التبويبات أعلى الجدول */
+.tt-tabs {
+    display: flex;
+    gap: 6px;
+    margin: 14px 0 10px;
+    border-bottom: 1px solid var(--line);
+}
+
+.tt-tab {
+    border: none;
+    background: none;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--slate-light);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+
+    .tt-tab:hover {
+        color: var(--green-800);
+    }
+
+    .tt-tab.active {
+        color: var(--green-800);
+        border-bottom-color: var(--green-600);
+    }
+
+.tt-view {
+    display: none;
+}
+
+    .tt-view.active {
+        display: block;
+    }
+
+.tt-hint {
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+/* مساحة العمل: الجدول + القائمة الجانبية للحصص غير المثبّتة (تتمدد القائمة لنفس ارتفاع الجدول ثم تُصبح قابلة للتمرير) */
+.tt-workspace {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+}
+
+    .tt-workspace .table-scroll {
+        flex: 1;
+        min-width: 0;
+    }
+
+.tt-tray {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--mint-50);
+    border: 1px dashed var(--green-600);
+    border-radius: 10px;
+    padding: 12px;
+    min-height: 200px;
+    max-height: 100vh;
+    transition: background .15s ease, border-color .15s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+    .tt-tray.drag-over {
+        background: #d6f5df;
+        border-color: var(--green-900);
+        border-style: solid;
+    }
+
+    .tt-tray h3 {
+        font-size: 13px;
+        color: var(--green-900);
+        margin: 0 0 4px;
+        flex-shrink: 0;
+    }
+
+.tt-tray-hint {
+    font-size: 11px;
+    margin: 0 0 10px;
+    flex-shrink: 0;
+}
+
+.tt-tray-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.tt-tray-filter-select {
+    font-size: 11.5px;
+    padding: 6px 8px;
+}
+
+.tt-tray-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.tt-tray-empty {
+    font-size: 12px;
+    color: var(--slate-light);
+    font-style: italic;
+}
+
+.tray-chip {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: grab;
+    font-size: 12px;
+    line-height: 1.4;
+    transition: box-shadow .15s ease, border-color .15s ease;
+    flex-shrink: 0;
+}
+
+    .tray-chip:active {
+        cursor: grabbing;
+    }
+
+    .tray-chip:hover {
+        box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    }
+
+    .tray-chip.selected {
+        border-color: var(--green-600);
+        box-shadow: inset 0 0 0 2px var(--green-600);
+    }
+
+    .tray-chip .tray-chip-subject {
+        font-weight: 700;
+        color: var(--green-900);
+    }
+
+    .tray-chip .tray-chip-teacher {
+        color: var(--slate-light);
+    }
+
+    .tray-chip .tray-chip-class {
+        color: var(--slate-light);
+        font-size: 11px;
+    }
+
+.fp-tray-group-header {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--green-900);
+    margin: 10px 0 2px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+}
+
+    .fp-tray-group-header:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+    }
+
+.fp-tray-subject-header {
+    font-size: 11px;
+    color: var(--slate-light);
+    margin: 2px 0;
+}
+
+@media (max-width: 720px) {
+    .tt-workspace {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tt-tray {
+        width: auto;
+        max-height: 320px;
+    }
+}
+
+/* ── Fade utility ── */
+.fade-in {
+    animation: fadeIn .25s ease;
+}
+
+/* ── Responsive ── */
+@media (max-width:720px) {
+    .app-header {
+        padding: 14px 18px;
+    }
+
+    .step-nav {
+        padding: 0 12px;
+        overflow-x: auto;
+    }
+
+    .step-label {
+        display: none;
+    }
+
+    #main {
+        padding: 8px 14px 32px;
+    }
+
+    .section-card {
+        padding: 18px;
+    }
+
+    .section-head-row {
+        flex-direction: column;
+    }
+
+    .wizard-footer {
+        padding: 14px 18px;
+    }
+}
+
+/* ── Print ── */
+@media print {
+    .no-print, .app-header, .step-nav, .wizard-footer, #toast-container {
+        display: none !important;
+    }
+
+    body {
+        background: #fff;
+    }
+
+    .card {
+        box-shadow: none;
+        border: none;
+    }
+}
